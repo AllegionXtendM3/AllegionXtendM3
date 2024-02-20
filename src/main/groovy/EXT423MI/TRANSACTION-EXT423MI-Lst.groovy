@@ -26,9 +26,6 @@
  import java.time.LocalDateTime;
  import java.time.format.DateTimeFormatter;
  import groovy.json.JsonSlurper;
- import java.math.BigDecimal;
- import java.math.RoundingMode;
- import java.text.DecimalFormat;
  import java.lang.NumberFormatException;
 
 /*
@@ -41,7 +38,6 @@
 public class Lst extends ExtendM3Transaction {
   private final MIAPI mi;
   private final DatabaseAPI database;
-  private final MICallerAPI miCaller;
   private final ProgramAPI program;
   
   //Input fields
@@ -53,20 +49,18 @@ public class Lst extends ExtendM3Transaction {
  /*
   * Get Delivery/Package extension table row
  */
-  public Lst(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, ProgramAPI program) {
+  public Lst(MIAPI mi, DatabaseAPI database, ProgramAPI program) {
     this.mi = mi;
     this.database = database;
-  	this.miCaller = miCaller;
-  	this.program = program;
-    
+    this.program = program;
   }
   
   public void main() {
-  	dlix = mi.inData.get("DLIX") == null ? '' : mi.inData.get("DLIX").trim();
-		XXCONO = (Integer)program.LDAZD.CONO;
-		
+    dlix = mi.inData.get("DLIX") == null ? '' : mi.inData.get("DLIX").trim();
+    XXCONO = (Integer)program.LDAZD.CONO;
+	  
     // Validate input fields  	
-		if (dlix.isEmpty()) {
+    if (dlix.isEmpty()) {
       mi.error("Delivery Index must be entered");
       return;
     }
