@@ -32,12 +32,11 @@
  import java.math.RoundingMode;
  import java.text.DecimalFormat;
 
-
 /*
  *Modification area - M3
  *Nbr               Date      User id     Description
  *Star Track        20231113  WLAM        Star Track Integration - shipment delete EXTREL records
- *
+ *Star Track        20240121  RMURRAY     Syntax, def to void, set dlix convert to long.
  */
 
 /*
@@ -61,14 +60,10 @@ public class Del extends ExtendM3Transaction {
  /*
   * Delete Delivery extension table row
  */
-  public Del(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, LoggerAPI logger, ProgramAPI program, IonAPI ion) {
+  public Del(MIAPI mi, DatabaseAPI database, ProgramAPI program) {
     this.mi = mi;
     this.database = database;
-  	this.miCaller = miCaller;
-  	this.logger = logger;
-  	this.program = program;
-	  this.ion = ion;
-	  
+  	this.program = program;	  
   }
 
   public void main() {
@@ -80,20 +75,25 @@ public class Del extends ExtendM3Transaction {
       mi.error("Delivery Index must be entered");
       return;
     }
-    
+
+    try{
+      dlixLong = parseLong(dlix);
+    }catch(NumberFormatException e){
+      mi.error("Number format exception DLIX")
+      return;
+    }  
+
   	deleteEXTREL(dlix);
   }
-  	
   /*
   * Delete extension table EXTREL
   *
   */
-  def deleteEXTREL(String dlix) {
-
+  private void deleteEXTREL(String dlix) {
 	  DBAction actionEXTREL = database.table("EXTREL").build();
   	DBContainer EXTREL = actionEXTREL.getContainer();
   	EXTREL.set("EXCONO", XXCONO);
-  	EXTREL.set("EXDLIX", dlix.toInteger());
+  	EXTREL.set("EXDLIX", dlixLong);
   	actionEXTREL.readAllLock(EXTREL, 2, delEXTREL);
 	}
   /*

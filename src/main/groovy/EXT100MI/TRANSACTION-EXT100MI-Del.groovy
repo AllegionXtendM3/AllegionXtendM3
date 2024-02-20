@@ -37,7 +37,7 @@
  *Modification area - M3
  *Nbr               Date      User id     Description
  *Star Track        20231113  WLAM        Star Track Integration - shipment delete EXTCNN records
- *
+ *Star Track        20240121  RMURRAY     Syntax, def to void, set dlix convert to long.
  */
 
 /*
@@ -88,7 +88,7 @@ public class Del extends ExtendM3Transaction {
   * Delete extension table EXTCNN
   *
   */
-  def deleteEXTCNN(String conn) {
+  private void deleteEXTCNN(String conn) {
 
 	  DBAction actionEXTCNN = database.table("EXTCNN").build();
   	DBContainer EXTCNN = actionEXTCNN.getContainer();

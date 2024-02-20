@@ -37,7 +37,7 @@
  *Modification area - M3
  *Nbr               Date      User id     Description
  *Star Track        20231113  WLAM        Star Track Integration - shipment Add EXTREL records
- *
+ *Star Track        20240121  RMURRAY     Syntax, def to void, set dlix convert to long.
  */
 
 /*
@@ -59,6 +59,7 @@ public class Add extends ExtendM3Transaction {
   private String head;
   private Integer dipa;
   private String whlo;
+  private Long dlixLong;
 
   private int XXCONO;
  
@@ -89,6 +90,12 @@ public class Add extends ExtendM3Transaction {
       mi.error("Delivery Index must be entered");
       return;
     }
+    try{
+      dlixLong = parseLong(dlix);
+    }catch(NumberFormatException e){
+      mi.error("Number format exception DLIX")
+      return;
+    }  
 		if (whlo.isEmpty()) {
       mi.error("Warehouse must be entered");
       return;
@@ -107,7 +114,7 @@ public class Add extends ExtendM3Transaction {
     DBContainer MHDISH = queryMHDISH.getContainer();
     MHDISH.set("OQCONO", XXCONO);
     MHDISH.set("OQINOU", 1);
-    MHDISH.set("OQDLIX", dlix.toInteger());
+    MHDISH.set("OQDLIX", dlixLong);
     if (!queryMHDISH.read(MHDISH)) {
       mi.error("Delivery Index is invalid." + XXCONO + " DLIX= " + dlix);
       return;
@@ -118,7 +125,7 @@ public class Add extends ExtendM3Transaction {
     MPTRNS.set("ORCONO", XXCONO);
     MPTRNS.set("ORDIPA", dipa);
     MPTRNS.set("ORWHLO", whlo);
-    MPTRNS.set("ORDLIX", dlix.toInteger());
+    MPTRNS.set("ORDLIX", dlixLong);
     MPTRNS.set("ORPANR", panr);
     if (!queryMPTRNS.read(MPTRNS)) {
       mi.error("Package number is invalid" + XXCONO + " DLIX= " + dlix + " PANR=" + panr);
@@ -146,15 +153,14 @@ public class Add extends ExtendM3Transaction {
   * Write extension table EXTREL
   *
   */
-  def writeEXTREL(String dlix, String panr, String whlo, String head) {
+  private void writeEXTREL(String dlix, String panr, String whlo, String head) {
 	  //Current date and time
   	int currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInteger();
   	int currentTime = Integer.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss")));
-  	
 	  DBAction actionEXTREL = database.table("EXTREL").build();
   	DBContainer EXTREL = actionEXTREL.getContainer();
   	EXTREL.set("EXCONO", XXCONO);
-  	EXTREL.set("EXDLIX", dlix.toInteger());
+  	EXTREL.set("EXDLIX", dlixLong);
   	EXTREL.set("EXPANR", panr);
   	EXTREL.set("EXWHLO", whlo);
   	EXTREL.set("EXHEAD", head);

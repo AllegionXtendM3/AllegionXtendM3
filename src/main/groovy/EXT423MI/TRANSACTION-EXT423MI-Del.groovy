@@ -37,7 +37,7 @@
  *Modification area - M3
  *Nbr               Date      User id     Description
  *Star Track        20231113  WLAM        Star Track Integration - shipment delete EXTREL records
- *
+ *Star Track        20240121  RMURRAY     Syntax, def to void, set dlix convert to long.
  */
 
 /*
@@ -55,6 +55,7 @@ public class Del extends ExtendM3Transaction {
   
   //Input fields
   private String dlix;
+  private Long dlixLong;
 
   private int XXCONO;
  
@@ -73,13 +74,23 @@ public class Del extends ExtendM3Transaction {
 
   public void main() {
   	dlix = mi.inData.get("DLIX") == null ? '' : mi.inData.get("DLIX").trim();
-		XXCONO = (Integer)program.LDAZD.CONO;
-		
+    
     // Validate input fields  	
 		if (dlix.isEmpty()) {
       mi.error("Delivery Index must be entered");
       return;
     }
+
+    try{
+      dlixLong = parseLong(dlix);
+    }catch(NumberFormatException e){
+      mi.error("Number format exception DLIX")
+      return;
+    }  
+
+		XXCONO = (Integer)program.LDAZD.CONO;
+		
+
     
   	deleteEXTREL(dlix);
   }
@@ -88,12 +99,12 @@ public class Del extends ExtendM3Transaction {
   * Delete extension table EXTREL
   *
   */
-  def deleteEXTREL(String dlix) {
+  private void deleteEXTREL(String dlix) {
 
 	  DBAction actionEXTREL = database.table("EXTREL").build();
   	DBContainer EXTREL = actionEXTREL.getContainer();
   	EXTREL.set("EXCONO", XXCONO);
-  	EXTREL.set("EXDLIX", dlix.toInteger());
+  	EXTREL.set("EXDLIX", dlixLong);
   	actionEXTREL.readAllLock(EXTREL, 2, delEXTREL);
 	}
   /*
