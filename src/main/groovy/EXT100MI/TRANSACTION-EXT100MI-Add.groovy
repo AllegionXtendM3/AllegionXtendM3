@@ -37,7 +37,7 @@
  *Modification area - M3
  *Nbr               Date      User id     Description
  *Star Track        20231113  WLAM        Star Track Integration - shipment Add EXTCNN records
- *
+ *Star Track        20240121  RMURRAY     Syntax, def to void, set dlix convert to long.
  */
 
 /*
@@ -97,7 +97,7 @@ public class Add extends ExtendM3Transaction {
   * Write extension table EXTCNN
   *
   */
-  def writeEXTCNN(String conn) {
+  private void writeEXTCNN(String conn) {
 	  //Current date and time
   	int currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInteger();
   	int currentTime = Integer.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss")));
