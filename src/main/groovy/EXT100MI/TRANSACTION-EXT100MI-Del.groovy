@@ -22,22 +22,18 @@
  */
 
  import groovy.lang.Closure
- 
+ import groovy.json.JsonSlurper;
  import java.time.LocalDate;
  import java.time.LocalDateTime;
  import java.time.format.DateTimeFormatter;
  import java.time.ZoneId;
- import groovy.json.JsonSlurper;
- import java.math.BigDecimal;
- import java.math.RoundingMode;
- import java.text.DecimalFormat;
  import java.lang.NumberFormatException;
 
 /*
  *Modification area - M3
  *Nbr               Date      User id     Description
  *Star Track        20231113  WLAM        Star Track Integration - shipment delete EXTCNN records
- *Star Track        20240121  RMURRAY     Syntax, def to void, set dlix convert to long.
+ *Star Track        20240121  RMURRAY     Syntax, def to void, set dlix convert to long. Remove unused declarations
  */
 
 /*
@@ -48,7 +44,6 @@ public class Del extends ExtendM3Transaction {
 
   private final MIAPI mi;
   private final DatabaseAPI database;
-  private final MICallerAPI miCaller;
   private final ProgramAPI program;
   
   //Input fields
@@ -59,39 +54,34 @@ public class Del extends ExtendM3Transaction {
  /*
   * Delete Delivery extension table row
  */
-  public Del(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, ProgramAPI program) {
+  public Del(MIAPI mi, DatabaseAPI database, ProgramAPI program) {
     this.mi = mi;
     this.database = database;
-  	this.miCaller = miCaller;
-  	this.program = program;
-	  
+    this.program = program; 
   }
-
   public void main() {
-  	conn = mi.inData.get("CONN") == null ? '' : mi.inData.get("CONN").trim();
-		XXCONO = (Integer)program.LDAZD.CONO;
+    conn = mi.inData.get("CONN") == null ? '' : mi.inData.get("CONN").trim();
+    XXCONO = (Integer)program.LDAZD.CONO;
 		
     // Validate input fields  	
-		if (conn.isEmpty()) {
+    if (conn.isEmpty()) {
       mi.error("Shipment must be entered");
       return;
     }
     
-  	deleteEXTCNN(conn);
+    deleteEXTCNN(conn);
   }
-  	
   /*
   * Delete extension table EXTCNN
   *
   */
   private void deleteEXTCNN(String conn) {
-
-	  DBAction actionEXTCNN = database.table("EXTCNN").build();
-  	DBContainer EXTCNN = actionEXTCNN.getContainer();
-  	EXTCNN.set("EXCONO", XXCONO);
-  	EXTCNN.set("EXCONN", conn.toInteger());
-  	actionEXTCNN.readLock(EXTCNN, delEXTCNN);
-	}
+    DBAction actionEXTCNN = database.table("EXTCNN").build();
+    DBContainer EXTCNN = actionEXTCNN.getContainer();
+    EXTCNN.set("EXCONO", XXCONO);
+    EXTCNN.set("EXCONN", conn.toInteger());
+    actionEXTCNN.readLock(EXTCNN, delEXTCNN);
+  }
   /*
    * deleteEXTREL - Callback function
    *
