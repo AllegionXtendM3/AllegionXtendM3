@@ -28,9 +28,6 @@
  import java.time.format.DateTimeFormatter;
  import java.time.ZoneId;
  import groovy.json.JsonSlurper;
- import java.math.BigDecimal;
- import java.math.RoundingMode;
- import java.text.DecimalFormat;
  import java.lang.NumberFormatException;
 
 
@@ -49,40 +46,35 @@ public class Add extends ExtendM3Transaction {
 
   private final MIAPI mi;
   private final DatabaseAPI database;
-  private final MICallerAPI miCaller;
   private final ProgramAPI program;
   
   //Input fields
   private String dlix;
+  private Long dlixLong;
   private String panr;
   private String head;
   private Integer dipa;
   private String whlo;
-  private Long dlixLong;
-
   private int XXCONO;
  
  /*
   * Add Delivery extension table row
  */
-  public Add(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, ProgramAPI program) {
+  public Add(MIAPI mi, DatabaseAPI database, ProgramAPI program) {
     this.mi = mi;
     this.database = database;
-  	this.miCaller = miCaller;
-  	this.program = program;
+    this.program = program;
   }
 
   public void main() {
-  	dlix = mi.inData.get("DLIX") == null ? '' : mi.inData.get("DLIX").trim();
-  	panr = mi.inData.get("PANR") == null ? '' : mi.inData.get("PANR").trim();
-  	whlo = mi.inData.get("WHLO") == null ? '' : mi.inData.get("WHLO").trim();
-  	head = mi.inData.get("HEAD") == null ? '' : mi.inData.get("HEAD").trim();
-  	dipa = 0;
-  	//whlo = "G01";
-		XXCONO = (Integer)program.LDAZD.CONO;
-		
+    dlix = mi.inData.get("DLIX") == null ? '' : mi.inData.get("DLIX").trim();
+    panr = mi.inData.get("PANR") == null ? '' : mi.inData.get("PANR").trim();
+    whlo = mi.inData.get("WHLO") == null ? '' : mi.inData.get("WHLO").trim();
+    head = mi.inData.get("HEAD") == null ? '' : mi.inData.get("HEAD").trim();
+    dipa = 0;
+    XXCONO = (Integer)program.LDAZD.CONO;	
     // Validate input fields  	
-		if (dlix.isEmpty()) {
+    if (dlix.isEmpty()) {
       mi.error("Delivery Index must be entered");
       return;
     }
@@ -92,19 +84,18 @@ public class Add extends ExtendM3Transaction {
       mi.error("Number format exception DLIX")
       return;
     }  
-		if (whlo.isEmpty()) {
+    if (whlo.isEmpty()) {
       mi.error("Warehouse must be entered");
       return;
     }
-  	if (panr.isEmpty()) {
+    if (panr.isEmpty()) {
       mi.error("Package Number must be entered");
       return;
     }
-  	if (head.isEmpty()) {
+    if (head.isEmpty()) {
       mi.error("HEAD must be either Y or N");
       return;
     }
-    
     // - validate dlix
     DBAction queryMHDISH = database.table("MHDISH").index("00").selection("OQDLIX").build();
     DBContainer MHDISH = queryMHDISH.getContainer();
@@ -142,37 +133,36 @@ public class Add extends ExtendM3Transaction {
       mi.error("HEAD must be either Y or N");
       return;
     }
-  	writeEXTREL(dlix, panr, whlo, head);
+    writeEXTREL(dlix, panr, whlo, head);
   }
-  	
   /*
   * Write extension table EXTREL
   *
   */
   private void writeEXTREL(String dlix, String panr, String whlo, String head) {
-	  //Current date and time
-  	int currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInteger();
-  	int currentTime = Integer.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss")));
-	  DBAction actionEXTREL = database.table("EXTREL").build();
-  	DBContainer EXTREL = actionEXTREL.getContainer();
-  	EXTREL.set("EXCONO", XXCONO);
-  	EXTREL.set("EXDLIX", dlixLong);
-  	EXTREL.set("EXPANR", panr);
-  	EXTREL.set("EXWHLO", whlo);
-  	EXTREL.set("EXHEAD", head);
-  	EXTREL.set("EXRGDT", currentDate);
-  	EXTREL.set("EXRGTM", currentTime);
-  	EXTREL.set("EXLMDT", currentDate);
-  	EXTREL.set("EXCHNO", 0);
-  	EXTREL.set("EXCHID", program.getUser());
-  	actionEXTREL.insert(EXTREL, recordExists);
-	}
+    //Current date and time
+    int currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInteger();
+    int currentTime = Integer.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss")));
+    DBAction actionEXTREL = database.table("EXTREL").build();
+    DBContainer EXTREL = actionEXTREL.getContainer();
+    EXTREL.set("EXCONO", XXCONO);
+    EXTREL.set("EXDLIX", dlixLong);
+    EXTREL.set("EXPANR", panr);
+    EXTREL.set("EXWHLO", whlo);
+    EXTREL.set("EXHEAD", head);
+    EXTREL.set("EXRGDT", currentDate);
+    EXTREL.set("EXRGTM", currentTime);
+    EXTREL.set("EXLMDT", currentDate);
+    EXTREL.set("EXCHNO", 0);
+    EXTREL.set("EXCHID", program.getUser());
+    actionEXTREL.insert(EXTREL, recordExists);
+  }
   /*
    * recordExists - return record already exists error message to the MI
    *
   */
   Closure recordExists = {
-	  mi.error("Record already exists");
+    mi.error("Record already exists");
   }  	
 
 }
