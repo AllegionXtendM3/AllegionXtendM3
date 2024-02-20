@@ -37,7 +37,7 @@
  *Modification area - M3
  *Nbr               Date      User id     Description
  *Star Track        20231113  WLAM        Star Track Integration - shipment Add EXTCNN records
- *Star Track        20240121  RMURRAY     Syntax, def to void, set dlix convert to long.
+ *Star Track        20240121  RMURRAY     Syntax, def to void, set dlix convert to long. removed unused declarations
  */
 
 /*
@@ -49,9 +49,7 @@ public class Add extends ExtendM3Transaction {
   private final MIAPI mi;
   private final DatabaseAPI database;
   private final MICallerAPI miCaller;
-  private final LoggerAPI logger;
   private final ProgramAPI program;
-  private final IonAPI ion;
   
   //Input fields
   private String conn;
@@ -61,25 +59,22 @@ public class Add extends ExtendM3Transaction {
  /*
   * Add Delivery extension table row
  */
-  public Add(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, LoggerAPI logger, ProgramAPI program, IonAPI ion) {
+  public Add(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, ProgramAPI program) {
     this.mi = mi;
     this.database = database;
-  	this.miCaller = miCaller;
-  	this.logger = logger;
-  	this.program = program;
-	  this.ion = ion;
-	  
+    this.miCaller = miCaller;
+    this.program = program; 
   }
 
   public void main() {
-  	conn = mi.inData.get("CONN") == null ? '' : mi.inData.get("CONN").trim();
-		XXCONO = (Integer)program.LDAZD.CONO;
+    conn = mi.inData.get("CONN") == null ? '' : mi.inData.get("CONN").trim();
+    XXCONO = (Integer)program.LDAZD.CONO;
 		
     // Validate input fields  	
-		if (conn.isEmpty()) {
+    if (conn.isEmpty()) {
       mi.error("Shipment must be entered");
       return;
-		}
+    }
 
     // - validate conn
     DBAction queryDCONSI = database.table("DCONSI").index("00").selection("DACONN").build();
@@ -98,27 +93,27 @@ public class Add extends ExtendM3Transaction {
   *
   */
   private void writeEXTCNN(String conn) {
-	  //Current date and time
-  	int currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInteger();
-  	int currentTime = Integer.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss")));
+    //Current date and time
+    int currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInteger();
+    int currentTime = Integer.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss")));
   	
-	  DBAction actionEXTCNN = database.table("EXTCNN").build();
-  	DBContainer EXTCNN = actionEXTCNN.getContainer();
-  	EXTCNN.set("EXCONO", XXCONO);
-  	EXTCNN.set("EXCONN", conn.toInteger());
-  	EXTCNN.set("EXRGDT", currentDate);
-  	EXTCNN.set("EXRGTM", currentTime);
-  	EXTCNN.set("EXLMDT", currentDate);
-  	EXTCNN.set("EXCHNO", 0);
-  	EXTCNN.set("EXCHID", program.getUser());
-  	actionEXTCNN.insert(EXTCNN, recordExists);
-	}
+    DBAction actionEXTCNN = database.table("EXTCNN").build();
+    DBContainer EXTCNN = actionEXTCNN.getContainer();
+    EXTCNN.set("EXCONO", XXCONO);
+    EXTCNN.set("EXCONN", conn.toInteger());
+    EXTCNN.set("EXRGDT", currentDate);
+    EXTCNN.set("EXRGTM", currentTime);
+    EXTCNN.set("EXLMDT", currentDate);
+    EXTCNN.set("EXCHNO", 0);
+    EXTCNN.set("EXCHID", program.getUser());
+    actionEXTCNN.insert(EXTCNN, recordExists);
+  }
   /*
    * recordExists - return record already exists error message to the MI
    *
   */
   Closure recordExists = {
-	  mi.error("Record already exists");
+    mi.error("Record already exists");
   }  	
 
 }
