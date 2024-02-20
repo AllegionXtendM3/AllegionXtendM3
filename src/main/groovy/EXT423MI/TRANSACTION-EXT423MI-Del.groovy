@@ -22,17 +22,12 @@
  */
 
  import groovy.lang.Closure
- 
+ import groovy.json.JsonSlurper;
  import java.time.LocalDate;
  import java.time.LocalDateTime;
  import java.time.format.DateTimeFormatter;
  import java.time.ZoneId;
- import groovy.json.JsonSlurper;
- import java.math.BigDecimal;
- import java.math.RoundingMode;
- import java.text.DecimalFormat;
  import java.lang.NumberFormatException;
-
 
 /*
  *Modification area - M3
@@ -49,10 +44,7 @@ public class Del extends ExtendM3Transaction {
 
   private final MIAPI mi;
   private final DatabaseAPI database;
-  private final MICallerAPI miCaller;
-  private final LoggerAPI logger;
   private final ProgramAPI program;
-  private final IonAPI ion;
   
   //Input fields
   private String dlix;
@@ -63,37 +55,27 @@ public class Del extends ExtendM3Transaction {
  /*
   * Delete Delivery extension table row
  */
-  public Del(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, LoggerAPI logger, ProgramAPI program, IonAPI ion) {
+  public Del(MIAPI mi, DatabaseAPI database, ProgramAPI program) {
     this.mi = mi;
     this.database = database;
-  	this.miCaller = miCaller;
-  	this.logger = logger;
-  	this.program = program;
-	  this.ion = ion;
-	  
+    this.program = program;
   }
 
   public void main() {
-  	dlix = mi.inData.get("DLIX") == null ? '' : mi.inData.get("DLIX").trim();
-    
+    dlix = mi.inData.get("DLIX") == null ? '' : mi.inData.get("DLIX").trim();
     // Validate input fields  	
-		if (dlix.isEmpty()) {
+    if (dlix.isEmpty()) {
       mi.error("Delivery Index must be entered");
       return;
     }
-
     try{
       dlixLong = parseLong(dlix);
     }catch(NumberFormatException e){
       mi.error("Number format exception DLIX")
       return;
     }  
-
-		XXCONO = (Integer)program.LDAZD.CONO;
-		
-
-    
-  	deleteEXTREL(dlix);
+    XXCONO = (Integer)program.LDAZD.CONO;
+    deleteEXTREL(dlix);
   }
   	
   /*
@@ -101,13 +83,12 @@ public class Del extends ExtendM3Transaction {
   *
   */
   private void deleteEXTREL(String dlix) {
-
-	  DBAction actionEXTREL = database.table("EXTREL").build();
-  	DBContainer EXTREL = actionEXTREL.getContainer();
-  	EXTREL.set("EXCONO", XXCONO);
-  	EXTREL.set("EXDLIX", dlixLong);
-  	actionEXTREL.readAllLock(EXTREL, 2, delEXTREL);
-	}
+    DBAction actionEXTREL = database.table("EXTREL").build();
+    DBContainer EXTREL = actionEXTREL.getContainer();
+    EXTREL.set("EXCONO", XXCONO);
+    EXTREL.set("EXDLIX", dlixLong);
+    actionEXTREL.readAllLock(EXTREL, 2, delEXTREL);
+  }
   /*
    * deleteEXTREL - Callback function
    *
