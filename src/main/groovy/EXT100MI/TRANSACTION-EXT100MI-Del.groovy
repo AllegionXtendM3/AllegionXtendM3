@@ -31,7 +31,7 @@
  import java.math.BigDecimal;
  import java.math.RoundingMode;
  import java.text.DecimalFormat;
-
+ import java.lang.NumberFormatException;
 
 /*
  *Modification area - M3
@@ -49,9 +49,7 @@ public class Del extends ExtendM3Transaction {
   private final MIAPI mi;
   private final DatabaseAPI database;
   private final MICallerAPI miCaller;
-  private final LoggerAPI logger;
   private final ProgramAPI program;
-  private final IonAPI ion;
   
   //Input fields
   private String conn;
@@ -61,13 +59,11 @@ public class Del extends ExtendM3Transaction {
  /*
   * Delete Delivery extension table row
  */
-  public Del(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, LoggerAPI logger, ProgramAPI program, IonAPI ion) {
+  public Del(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, ProgramAPI program) {
     this.mi = mi;
     this.database = database;
   	this.miCaller = miCaller;
-  	this.logger = logger;
   	this.program = program;
-	  this.ion = ion;
 	  
   }
 

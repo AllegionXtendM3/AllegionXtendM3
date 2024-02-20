@@ -31,6 +31,7 @@
  import java.math.BigDecimal;
  import java.math.RoundingMode;
  import java.text.DecimalFormat;
+ import java.lang.NumberFormatException;
 
 
 /*
@@ -49,9 +50,7 @@ public class Add extends ExtendM3Transaction {
   private final MIAPI mi;
   private final DatabaseAPI database;
   private final MICallerAPI miCaller;
-  private final LoggerAPI logger;
   private final ProgramAPI program;
-  private final IonAPI ion;
   
   //Input fields
   private String dlix;
@@ -66,14 +65,11 @@ public class Add extends ExtendM3Transaction {
  /*
   * Add Delivery extension table row
  */
-  public Add(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, LoggerAPI logger, ProgramAPI program, IonAPI ion) {
+  public Add(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, ProgramAPI program) {
     this.mi = mi;
     this.database = database;
   	this.miCaller = miCaller;
-  	this.logger = logger;
   	this.program = program;
-	  this.ion = ion;
-	  
   }
 
   public void main() {
