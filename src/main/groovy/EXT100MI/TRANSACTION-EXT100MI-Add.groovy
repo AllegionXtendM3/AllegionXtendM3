@@ -36,7 +36,7 @@
  */
 
 /*
-* - Write the record to EXTREL
+* - Write the record to EXTCNN
 */
 
 public class Add extends ExtendM3Transaction {

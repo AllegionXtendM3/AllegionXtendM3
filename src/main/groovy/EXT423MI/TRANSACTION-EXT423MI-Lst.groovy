@@ -26,25 +26,29 @@
  import java.time.LocalDateTime;
  import java.time.format.DateTimeFormatter;
  import groovy.json.JsonSlurper;
- import java.lang.NumberFormatException;
+ import java.math.BigDecimal;
+ import java.math.RoundingMode;
+ import java.text.DecimalFormat;
 
 /*
  *Modification area - M3
  *Nbr               Date      User id     Description
  *Star Track        20231113  WLAM        Star Track Integration - shipment List EXTREL records
- *Star Track        20240121  RMURRAY     Syntax, def to void, set dlix convert to long.
+ *Star Track        20240121  RMURRAY     Syntax, def to void, set dlix convert to long. 
+ *
  */
 
 public class Lst extends ExtendM3Transaction {
   private final MIAPI mi;
   private final DatabaseAPI database;
   private final ProgramAPI program;
-  
+
   //Input fields
   private String dlix;
   private List listEXTREL;
-  
+
   private int XXCONO;
+  private long dlixLong;
    
  /*
   * Get Delivery/Package extension table row
@@ -52,31 +56,33 @@ public class Lst extends ExtendM3Transaction {
   public Lst(MIAPI mi, DatabaseAPI database, ProgramAPI program) {
     this.mi = mi;
     this.database = database;
-    this.program = program;
+  	this.program = program;
+
   }
   
   public void main() {
-    dlix = mi.inData.get("DLIX") == null ? '' : mi.inData.get("DLIX").trim();
-    XXCONO = (Integer)program.LDAZD.CONO;
-	  
+  	dlix = mi.inData.get("DLIX") == null ? '' : mi.inData.get("DLIX").trim();
+		XXCONO = (Integer)program.LDAZD.CONO;
+		
     // Validate input fields  	
-    if (dlix.isEmpty()) {
+		if (dlix.isEmpty()) {
       mi.error("Delivery Index must be entered");
       return;
     }
+    
 
     try{
-      dlixLong = parseLong(dlix);
+      dlixLong = Long.parseLong(dlix);
     }catch(NumberFormatException e){
       mi.error("Number format exception DLIX")
       return;
-    }
+    }  
     
     // - validate dlix
     DBAction queryEXTREL = database.table("EXTREL").index("00").selection("EXCONO", "EXDLIX", "EXPANR", "EXWHLO").build();
     DBContainer EXTREL = queryEXTREL.getContainer();
     EXTREL.set("EXCONO", XXCONO);
-    EXTREL.set("EXDLIX", dlix.toInteger());
+    EXTREL.set("EXDLIX",dlixLong);
     listEXTREL = new ArrayList();
     queryEXTREL.readAll(EXTREL, 2, lstEXTREL)
     if (listEXTREL.size() == 1) { 
